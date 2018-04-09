@@ -9,8 +9,7 @@
 @file: cache.py
 @time: 03/03/2018 23:30
 """
-from core import db
-from core import config
+from . import db, config
 
 
 _enable = config.get('app.cache.enable')

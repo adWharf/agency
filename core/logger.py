@@ -10,11 +10,10 @@
 @time: 15/01/2018 1:19 PM
 """
 import sys
-from core import config
 import os
 import time
 from logbook import Logger, StreamHandler, FileHandler, set_datetime_format
-from core import container
+from . import container, config
 import functools
 
 

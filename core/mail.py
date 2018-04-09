@@ -13,7 +13,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
-from core import config
+from . import config
 
 _smtp = None
 
