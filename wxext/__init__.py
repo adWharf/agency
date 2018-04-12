@@ -10,3 +10,5 @@
 @time: 08/04/2018 09:56
 @description: This is the receiver server of wx-retinue, located at https://github.com/adWharf/wx-retinue
 """
+import sys
+sys.path.append('..')

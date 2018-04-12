@@ -40,6 +40,13 @@ class Client(object):
     def producer(self, producer):
         self._producer = producer
 
+    def perform(self, commands):
+        '''
+        :param commands:
+        :return:
+        '''
+        raise NotImplemented
+
     def statistic(self):
         '''
         This func should report the latest data
