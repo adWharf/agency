@@ -36,18 +36,21 @@ class Manager(object):
         self._clients['wxext'] = wxext
 
     def start_statistic(self):
-        for c in self._clients:
-            t = threading.Thread(target=c.statistic)
+        for cname in self._clients:
+            t = threading.Thread(target=self._clients[cname].statistic)
             t.start()
 
     def __init__(self):
         kafka_server = '%s:%d' % (config.get('app.kafka.host'), config.get('app.kafka.port'))
         logger.info('Start to connect kafka [%s]' % kafka_server)
-        self._client_command_consumer = KafkaConsumer('agency.action',
+        self._client_command_consumer = KafkaConsumer('agency.command',
                                                       client_id='agency_manager',
                                                       bootstrap_servers=kafka_server)
+        # run initial clients automatically
         self._run_default_client()
+        self.start_statistic()
 
+        # listen commands topic
         for record in self._client_command_consumer:
             try:
                 logger.info(record)
@@ -59,9 +62,25 @@ class Manager(object):
                 logger.error(e)
                 pass
 
-    def _handle_command(self, command, meta):
-        # TODO handle action
-        logger.info('Receive command: %r' % command)
+    def _handle_command(self, commands, meta):
+        '''
+        :param commands:
+        {
+            "target": "client"
+            "client": "wxext",
+            "commands": [
+                // details, parsed by the client
+            ]
+        }
+        :param meta:
+        :return:
+        '''
+        logger.info('Receive command: %r' % commands)
+        if commands['target'] == 'client':
+            if 'client' in commands and commands['client'] in self._clients:
+                self._clients[commands['client']].perform(commands['commands'])
+        elif commands['target'] == 'manager':
+            pass
         pass
 
 
