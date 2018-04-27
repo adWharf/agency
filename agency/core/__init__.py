@@ -9,8 +9,6 @@
 @file: __init__.py.py 
 @time: 15/01/2018 10:51 AM 
 """
-from core import config
-from core import logger
-from core.container import register, resolve
+from agency.core import logger
 
 __all__ = ['config', 'logger', 'register', 'resolve']

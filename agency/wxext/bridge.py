@@ -31,8 +31,7 @@ def data_reporters():
     '''
     request:
     {
-        "data": [
-            {
+        "data":{
                 "update_hour": "201804161735",
                 "camp_list":[{
                     "cid": 1636943340,
@@ -81,14 +80,18 @@ def data_reporters():
                     "order_pv": 0,
                     "order_amount": 0,
                     "quest_reservation_pv": 0
-                }]
+                }
             }
         ]
     }
     :return:
     '''
     global _command_q, _data_q
-    _data_q.send_bytes(bytes(request.form['data'], encoding='utf-8'))
+    data = json.dumps({
+        'data': request.form['data'],
+        'account': request.form['account'],
+        'update_hour': request.form['update_hour']})
+    _data_q.send_bytes(bytes(data, encoding='utf-8'))
     commands = []
     if _command_q.poll():
         commands = _command_q.rece()

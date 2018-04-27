@@ -12,11 +12,10 @@
 import pendulum
 import time
 import json
-import threading
 from multiprocessing import Process, Pipe
-from client import APIClient, Account as BaseAccount
+from agency.client import APIClient, Account as BaseAccount
 from .bridge import run as build_bridge
-from core import logger
+from agency.core import logger
 
 
 class Account(BaseAccount):
@@ -49,12 +48,14 @@ class Client(APIClient):
 
     @staticmethod
     def transformer(original_data):
-        rtn = {}
-        reversed_keys = ['total_cost', 'view_count', 'sy_cost']
+        rtn = {
+            'agency': 'wxext'
+        }
+        reversed_keys = ['total_cost', 'view_count', 'sy_cost', 'update_time', 'cname']
         map_key = {
             'cid': 'campaign_id',
         }
-        rtn['update_time'] = pendulum.from_format(original_data['update_hour'], '%Y%m%d%H%M').to_datetime_string()
+        # rtn['update_time'] = pendulum.from_format(original_data['update_time'], '%Y%m%d%H%M').to_datetime_string()
         for key in reversed_keys:
             rtn[key] = original_data[key]
         for key in map_key:
@@ -75,9 +76,14 @@ class Client(APIClient):
                 data = str(self._data_q.recv_bytes(), encoding='utf-8')
                 resp = json.loads(data)
                 processed_data = []
-                for record in resp['camp_list']:
-                    record['update_hour'] = resp['update_hour']
+                update_at = pendulum.from_format(resp['update_hour'], '%Y%m%d%H%M').to_datetime_string()
+                for record in json.loads(resp['data']):
+                    record['update_time'] = update_at
+                    record['account'] = resp['account']
                     processed_data.append(self.transformer(record))
-                self.producer.send(self._statistic_topic, data)
+                self.producer.send(self._statistic_topic, {
+                    'data': processed_data,
+                    'update_time': update_at,
+                    'account': resp['account']})
                 logger.info('Send ad data to kafka successfully')
             time.sleep(5)

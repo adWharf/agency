@@ -12,7 +12,8 @@
 import threading
 import json
 from kafka import KafkaProducer, KafkaConsumer
-from core import config, logger
+from core import config
+from core import logger
 from wxext.client import Client as WxExtClient
 
 
@@ -20,7 +21,6 @@ class Manager(object):
     _client_command_consumer = None
     _clients = {}
 
-    @staticmethod
     def statistic_consumer_factory(self, name):
         kafka_server = '%s:%d' % (config.get('app.kafka.host'), config.get('app.kafka.port'))
         return KafkaProducer(value_serializer=lambda v: json.dumps(v).encode('utf-8'),
@@ -32,7 +32,7 @@ class Manager(object):
     @logger.log
     def _run_default_client(self):
         wxext = WxExtClient()
-        wxext.producer = self.statistic_consumer_factory(self, 'wxext')
+        wxext.producer = self.statistic_consumer_factory('wxext')
         self._clients['wxext'] = wxext
 
     def start_statistic(self):
@@ -47,7 +47,9 @@ class Manager(object):
                                                       client_id='agency_manager',
                                                       bootstrap_servers=kafka_server)
         # run initial clients automatically
+        logger.info('Start to run default client...')
         self._run_default_client()
+        logger.info('Start statistic...')
         self.start_statistic()
 
         # listen commands topic

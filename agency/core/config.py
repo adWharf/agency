@@ -14,11 +14,12 @@ import toml
 import os
 from . import container
 
-APP_PATH = os.path.split(os.path.split(os.path.realpath(__file__))[0])[0]
+PROJECT_PATH = os.path.split(os.path.realpath(__file__))[0] + '/../../'
+APP_PATH = os.path.split(os.path.realpath(__file__))[0] + '/../'
 
 __config = {}
 
-for p, d, file_lists in os.walk(os.path.join(APP_PATH, 'config')):
+for p, d, file_lists in os.walk(os.path.join(PROJECT_PATH, 'config')):
     for f in file_lists:
         if 'example' in f:
             continue
