@@ -32,7 +32,6 @@ def data_reporters():
     request:
     {
         "data":{
-                "update_hour": "201804161735",
                 "camp_list":[{
                     "cid": 1636943340,
                     "total_budget": 3000000,
@@ -82,7 +81,9 @@ def data_reporters():
                     "quest_reservation_pv": 0
                 }
             }
-        ]
+        ],
+        "update_hour": "201804161735",
+        "account": "广告投放账户"
     }
     :return:
     '''

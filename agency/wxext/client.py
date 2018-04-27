@@ -17,6 +17,8 @@ from agency.client import APIClient, Account as BaseAccount
 from .bridge import run as build_bridge
 from agency.core import logger
 
+logger = logger.get('WXEXT.CLIENT')
+
 
 class Account(BaseAccount):
     pass
@@ -72,18 +74,22 @@ class Client(APIClient):
     def statistic(self):
         while True:
             while self._data_q.poll():
-                logger.info('Receive ad data')
-                data = str(self._data_q.recv_bytes(), encoding='utf-8')
-                resp = json.loads(data)
-                processed_data = []
-                update_at = pendulum.from_format(resp['update_hour'], '%Y%m%d%H%M').to_datetime_string()
-                for record in json.loads(resp['data']):
-                    record['update_time'] = update_at
-                    record['account'] = resp['account']
-                    processed_data.append(self.transformer(record))
-                self.producer.send(self._statistic_topic, {
-                    'data': processed_data,
-                    'update_time': update_at,
-                    'account': resp['account']})
-                logger.info('Send ad data to kafka successfully')
+                try:
+                    logger.info('Receive ad data')
+                    data = str(self._data_q.recv_bytes(), encoding='utf-8')
+                    resp = json.loads(data)
+                    processed_data = []
+                    update_at = pendulum.from_format(resp['update_hour'], '%Y%m%d%H%M').to_datetime_string()
+                    for record in json.loads(resp['data']):
+                        record['update_time'] = update_at
+                        record['account'] = resp['account']
+                        processed_data.append(self.transformer(record))
+                    self.producer.send(self._statistic_topic, {
+                        'data': processed_data,
+                        'update_time': update_at,
+                        'account': resp['account']})
+                    logger.info('Send ad data to kafka successfully')
+                except Exception as e:
+                    logger.error('Exception raised when send data to kafka')
+                    logger.error(e)
             time.sleep(5)
