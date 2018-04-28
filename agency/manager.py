@@ -16,6 +16,8 @@ from core import config
 from core import logger
 from wxext.client import Client as WxExtClient
 
+logger = logger.get('Manager')
+
 
 class Manager(object):
     _client_command_consumer = None

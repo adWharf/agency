@@ -17,7 +17,7 @@ from agency.client import APIClient, Account as BaseAccount
 from .bridge import run as build_bridge
 from agency.core import logger
 
-logger = logger.get('WXEXT.CLIENT')
+logger = logger.get('Wxect.Client')
 
 
 class Account(BaseAccount):
