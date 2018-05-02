@@ -17,7 +17,7 @@ from agency.client import APIClient, Account as BaseAccount
 from .bridge import run as build_bridge
 from agency.core import logger
 
-logger = logger.get('Wxect.Client')
+logger = logger.get('Wxext.Client')
 
 
 class Account(BaseAccount):
@@ -31,8 +31,8 @@ class Client(APIClient):
         self._data_q, another_data_end = Pipe()
         self._command_q, another_command_end = Pipe()
         # start server to receive data from wx-retinue
-        bridge = Process(target=build_bridge, args=(another_data_end, another_command_end))
-        bridge.start()
+        self._bridge = Process(target=build_bridge, args=(another_data_end, another_command_end))
+        self._bridge.start()
 
     def perform(self, commands):
         '''
@@ -93,3 +93,7 @@ class Client(APIClient):
                     logger.error('Exception raised when send data to kafka')
                     logger.error(e)
             time.sleep(5)
+
+    def quit(self):
+        self._bridge.terminate()
+

@@ -54,6 +54,13 @@ class Client(object):
         '''
         raise NotImplemented
 
+    def quit(self):
+        '''
+        Client should quit elegantly when called this fun
+        :return:
+        '''
+        raise NotImplemented
+
 
 class APIClient(Client):
     _type = API_CLIENT
