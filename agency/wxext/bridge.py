@@ -20,6 +20,9 @@ _bridge = Flask(__name__)
 global _data_q  # type: multiprocessing.Connection
 global _command_q  # type: multiprocessing.Connection
 
+TYPE_STATISTIC = 1
+TYPE_CAMP_INFO = 2
+
 
 def set_client(ct):
     global client
@@ -89,9 +92,12 @@ def data_reporters():
     '''
     global _command_q, _data_q
     data = json.dumps({
-        'data': request.form['data'],
-        'account': request.form['account'],
-        'update_hour': request.form['update_hour']})
+        'type': TYPE_STATISTIC,
+        'data': {
+            'data': request.form['data'],
+            'account': request.form['account'],
+            'update_hour': request.form['update_hour']
+        }})
     _data_q.send_bytes(bytes(data, encoding='utf-8'))
     commands = []
     if _command_q.poll():
@@ -100,6 +106,12 @@ def data_reporters():
         'stats': 'ok',
         'commands': commands
     })
+
+
+@_bridge.route('/campaignInfo', methods=['POST'])
+def campaign_info_reporters():
+    global _data_q
+
 
 
 def run(data_q, command_q):

@@ -14,8 +14,10 @@ import time
 import json
 from multiprocessing import Process, Pipe
 from agency.client import APIClient, Account as BaseAccount
-from .bridge import run as build_bridge
+from .bridge import run as build_bridge, TYPE_STATISTIC, TYPE_CAMP_INFO
 from agency.core import logger
+
+AD_CAMPAIGN_INFO_TOPIC = 'ad.campaign.info'             # 投放计划信息
 
 logger = logger.get('Wxext.Client')
 
@@ -25,6 +27,8 @@ class Account(BaseAccount):
 
 
 class Client(APIClient):
+
+    _agency = 'wxext'
 
     def __init__(self, account=None):
         APIClient.__init__(self, account)
@@ -78,17 +82,34 @@ class Client(APIClient):
                     logger.info('Receive ad data')
                     data = str(self._data_q.recv_bytes(), encoding='utf-8')
                     resp = json.loads(data)
-                    processed_data = []
-                    update_at = pendulum.from_format(resp['update_hour'], '%Y%m%d%H%M').to_datetime_string()
-                    for record in json.loads(resp['data']):
-                        record['update_time'] = update_at
-                        record['account'] = resp['account']
-                        processed_data.append(self.transformer(record))
-                    self.producer.send(self._statistic_topic, {
-                        'data': processed_data,
-                        'update_time': update_at,
-                        'account': resp['account']})
-                    logger.info('Send ad data to kafka successfully')
+
+                    if resp['type'] == TYPE_CAMP_INFO:
+                        '''
+                        Report campaign info
+                        '''
+                        logger.info('Receive campaigns info')
+                        self._producer.send(AD_CAMPAIGN_INFO_TOPIC, {
+                            'agency': self._agency,
+                            'account': resp['data']['account'],
+                            'campaigns': resp['data']['campaigns'],
+                        })
+                        logger.info('Send campaign data to kafka successfully')
+                    elif resp['type'] == TYPE_STATISTIC:
+                        ''''
+                        Report statistic
+                        '''
+                        logger.info('Receive statistic info')
+                        processed_data = []
+                        update_at = pendulum.from_format(resp['update_hour'], '%Y%m%d%H%M').to_datetime_string()
+                        for record in json.loads(resp['data']):
+                            record['update_time'] = update_at
+                            record['account'] = resp['account']
+                            processed_data.append(self.transformer(record))
+                        self.producer.send(self._statistic_topic, {
+                            'data': processed_data,
+                            'update_time': update_at,
+                            'account': resp['account']})
+                        logger.info('Send ad data to kafka successfully')
                 except Exception as e:
                     logger.error('Exception raised when send data to kafka')
                     logger.error(e)

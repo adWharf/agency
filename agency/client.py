@@ -18,7 +18,8 @@ BROWSER_CLIENT = 'browser'
 
 
 class Account(object):
-    pass
+    def __init__(self, cfg):
+        self._cfg = cfg
 
 
 class Client(object):
