@@ -50,7 +50,6 @@ class Manager(object):
                 self._handle_command(json.loads(v), record)
             except Exception as e:
                 logger.error(e)
-                pass
 
     def statistic_consumer_factory(self, name):
         kafka_server = '%s:%d' % (config.get('app.kafka.host'), config.get('app.kafka.port'))

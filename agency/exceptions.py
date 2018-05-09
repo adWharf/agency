@@ -20,4 +20,4 @@ class UnknowCommandException(Exception):
         return json.dumps(self._command)
 
     def __repr__(self):
-        return self.__str__(self)
+        return self.__str__()

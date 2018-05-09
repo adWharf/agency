@@ -98,6 +98,7 @@ class Client(APIClient):
                         ''''
                         Report statistic
                         '''
+                        resp = resp['data']
                         logger.info('Receive statistic info')
                         processed_data = []
                         update_at = pendulum.from_format(resp['update_hour'], '%Y%m%d%H%M').to_datetime_string()
