@@ -59,7 +59,6 @@ class Manager(object):
                              bootstrap_servers=kafka_server,
                              retries=3)
 
-    @logger.log
     def _run_default_client(self):
         wxext = WxExtClient()
         wxext.producer = self.statistic_consumer_factory('wxext')
