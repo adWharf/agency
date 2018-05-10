@@ -29,7 +29,7 @@ class Response(BaseResponse):
         else:
             headers = Headers([origin, methods])
         kwargs['headers'] = headers
-        BaseResponse.__init__(response, **kwargs)
+        super().__init__(response, **kwargs)
 
 
 _bridge = Flask(__name__)
