@@ -110,10 +110,11 @@ def data_reporters():
     :return:
     '''
     global _command_q, _data_q
+    request_data = json.loads(request.form['data'])
     data = json.dumps({
         'type': TYPE_STATISTIC,
         'data': {
-            'data': request.form['data']['camp_list'],
+            'data': request_data['camp_list'],
             'account': request.form['account'],
             'update_hour': request.form['update_hour']
         }})

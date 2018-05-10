@@ -91,7 +91,7 @@ class Client(APIClient):
                         self._producer.send(AD_CAMPAIGN_INFO_TOPIC, {
                             'agency': self._agency,
                             'account': resp['data']['account'],
-                            'campaigns': resp['data']['campaigns'],
+                            'campaigns': json.loads(resp['data']['campaigns']),
                         })
                         logger.info('Send campaign data to kafka successfully')
                     elif resp['type'] == TYPE_STATISTIC:
