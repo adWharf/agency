@@ -97,12 +97,20 @@ class Client(APIClient):
                     elif resp['type'] == TYPE_STATISTIC:
                         ''''
                         Report statistic
+                        {
+                            data: [
+                                {},
+                                {}
+                            ],
+                            account: 'myaccount',
+                            'update_hour: '201804151005'
+                        }
                         '''
                         resp = resp['data']
                         logger.info('Receive statistic info')
                         processed_data = []
                         update_at = pendulum.from_format(resp['update_hour'], '%Y%m%d%H%M').to_datetime_string()
-                        for record in json.loads(resp['data']):
+                        for record in resp['data']:
                             record['update_time'] = update_at
                             record['account'] = resp['account']
                             processed_data.append(self.transformer(record))
