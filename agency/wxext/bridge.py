@@ -23,11 +23,13 @@ class Response(BaseResponse):
         headers = kwargs.get('headers')
         origin = ('Access-Control-Allow-Origin', '*')
         methods = ('Access-Control-Allow-Methods', 'HEAD, OPTIONS, GET, POST, DELETE, PUT')
+        extra = ('Access-Control-Allow-Headers', '*')
         if headers:
             headers.add(*origin)
             headers.add(*methods)
+            headers.add(*extra)
         else:
-            headers = Headers([origin, methods])
+            headers = Headers([origin, methods, extra])
         kwargs['headers'] = headers
         super().__init__(response, **kwargs)
 
