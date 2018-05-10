@@ -116,7 +116,7 @@ def data_reporters():
         'data': {
             'data': request_data['camp_list'],
             'account': request.form['account'],
-            'update_hour': request.form['update_hour']
+            'update_hour': request_data['update_hour']
         }})
     _data_q.send_bytes(bytes(data, encoding='utf-8'))
     commands = []
