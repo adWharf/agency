@@ -94,7 +94,7 @@ def data_reporters():
     data = json.dumps({
         'type': TYPE_STATISTIC,
         'data': {
-            'data': request.form['data'],
+            'data': request.form['data']['camp_list'],
             'account': request.form['account'],
             'update_hour': request.form['update_hour']
         }})
@@ -108,10 +108,31 @@ def data_reporters():
     })
 
 
-@_bridge.route('/campaignInfo', methods=['POST'])
+@_bridge.route('/campaigns', methods=['POST'])
 def campaign_info_reporters():
+    '''
+    {
+        'campaigns': [
+            { // campaign1 },
+            { // campaign2 }
+        ],
+        'account': 'my account'
+    }
+    :return:
+    '''
     global _data_q
-
+    data = json.dumps({
+        'type': TYPE_CAMP_INFO,
+        'data': {
+            'campaigns': request.form['campaigns'],
+            'account': request.form['account']
+        }
+    })
+    _data_q.send_bytes(bytes(data, encoding='utf-8'))
+    return json.dumps({
+        'status': 'ok',
+        'commands': []
+    })
 
 
 def run(data_q, command_q):
