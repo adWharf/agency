@@ -12,11 +12,28 @@
 
 import json
 import multiprocessing
-from flask import Flask, request
+from werkzeug.datastructures import Headers
+from flask import Flask, request, Response as BaseResponse
 from core import config
 
 
+class Response(BaseResponse):
+    def __init__(self, response=None, **kwargs):
+        kwargs['headers'] = ''
+        headers = kwargs.get('headers')
+        origin = ('Access-Control-Allow-Origin', '*')
+        methods = ('Access-Control-Allow-Methods', 'HEAD, OPTIONS, GET, POST, DELETE, PUT')
+        if headers:
+            headers.add(*origin)
+            headers.add(*methods)
+        else:
+            headers = Headers([origin, methods])
+        kwargs['headers'] = headers
+        BaseResponse.__init__(response, **kwargs)
+
+
 _bridge = Flask(__name__)
+_bridge.response_class = Response
 global _data_q  # type: multiprocessing.Connection
 global _command_q  # type: multiprocessing.Connection
 
