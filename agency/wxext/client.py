@@ -14,7 +14,7 @@ import time
 import json
 from multiprocessing import Process, Pipe
 from agency.client import APIClient, Account as BaseAccount
-from .bridge import run as build_bridge, TYPE_STATISTIC, TYPE_CAMP_INFO
+from .bridge import run as build_bridge, TYPE_STATISTIC, TYPE_CAMP_INFO, TYPE_ACTION_RES
 from agency.core import logger
 
 AD_CAMPAIGN_INFO_TOPIC = 'ad.campaign.info'             # 投放计划信息
@@ -84,7 +84,6 @@ class Client(APIClient):
         while True:
             while self._data_q.poll():
                 try:
-                    logger.info('Receive ad data')
                     data = str(self._data_q.recv_bytes(), encoding='utf-8')
                     resp = json.loads(data)
 
@@ -99,6 +98,20 @@ class Client(APIClient):
                             'campaigns': json.loads(resp['data']['campaigns']),
                         })
                         logger.info('Send campaign data to kafka successfully')
+                    elif resp['type'] == TYPE_ACTION_RES:
+                        '''
+                        Report action result
+                        {
+                            id: 1,
+                            resp_cnt: 'success',
+                            resp_status: 200
+                        }
+                        '''
+                        logger.info('Receive action perform results')
+                        data = resp['data']
+                        self.report_perform_res(data['id'], data['resp_cnt'], data['resp_status'])
+                        logger.info('Send action results to kafka successfully')
+
                     elif resp['type'] == TYPE_STATISTIC:
                         ''''
                         Report statistic

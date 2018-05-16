@@ -12,6 +12,9 @@
 import kafka
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
+from agency.core import logger
+
+logger = logger.get('Client')
 
 API_CLIENT = 'api'
 BROWSER_CLIENT = 'browser'
@@ -47,6 +50,15 @@ class Client(object):
         :return:
         '''
         raise NotImplemented
+
+    def report_perform_res(self, id, resp_cnt, resp_status):
+        self._producer.send('agency.command.reporter', {
+            'id': id,
+            'resp_cnt': resp_cnt,
+            'resp_status': resp_status,
+        })
+        logger.info('Reporter results of performing commands successfully')
+
 
     def statistic(self):
         '''

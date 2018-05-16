@@ -41,6 +41,7 @@ global _command_q  # type: multiprocessing.Connection
 
 TYPE_STATISTIC = 1
 TYPE_CAMP_INFO = 2
+TYPE_ACTION_RES = 3
 
 
 def set_client(ct):
@@ -152,6 +153,22 @@ def campaign_info_reporters():
         }
     })
     _data_q.send_bytes(bytes(data, encoding='utf-8'))
+    return json.dumps({
+        'status': 'ok',
+        'commands': []
+    })
+
+
+@_bridge.route('/actions/<id>', methods=['PUT'])
+def action_result(id):
+    _data_q.send_bytes(bytes(json.dumps({
+        'type': TYPE_ACTION_RES,
+        'data': {
+            'id': id,
+            'resp_cnt': request.form['resp_cnt'],
+            'resp_status': request.form['resp_status']
+        }
+    }), encoding='utf-8'))
     return json.dumps({
         'status': 'ok',
         'commands': []
