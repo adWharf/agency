@@ -43,14 +43,19 @@ class Client(APIClient):
         :param commands:
         [
             {
-                "action": "STOP",
-                ""
+                "campaign_id": 1
+                "action": "suspend",
+                "value": None
+            },
+            {
+                "campaign_id": 2
+                "action": "timeset_end",
+                "value": 6
             }
         ]
         :return:
         '''
-        for command in commands:
-            self._command_q.send(command)
+        self._command_q.send(commands)
 
     @staticmethod
     def transformer(original_data):
