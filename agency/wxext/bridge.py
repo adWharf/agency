@@ -121,7 +121,7 @@ def data_reporters():
     _data_q.send_bytes(bytes(data, encoding='utf-8'))
     commands = []
     while _command_q.poll():
-        commands.append(_command_q.recv())
+        commands += _command_q.recv()
         # At most 20 commands at one time
         if len(commands) > 20:
             break
