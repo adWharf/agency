@@ -120,8 +120,11 @@ def data_reporters():
         }})
     _data_q.send_bytes(bytes(data, encoding='utf-8'))
     commands = []
-    if _command_q.poll():
-        commands = _command_q.rece()
+    while _command_q.poll():
+        commands.append(_command_q.recv())
+        # At most 20 commands at one time
+        if len(commands) > 20:
+            break
     return json.dumps({
         'stats': 'ok',
         'commands': commands
