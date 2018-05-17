@@ -36,6 +36,8 @@ class Response(BaseResponse):
 
 _bridge = Flask(__name__)
 _bridge.response_class = Response
+_bridge.config['MAX_CONTENT_LENGTH'] = 20*1024*1024
+
 global _data_q  # type: multiprocessing.Connection
 global _command_q  # type: multiprocessing.Connection
 
