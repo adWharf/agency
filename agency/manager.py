@@ -16,6 +16,7 @@ from core import config
 from core import logger
 from wxext.client import Client as WxExtClient
 from exceptions import UnknowCommandException
+from constants.topics import AGENCY_COMMAND_TOPIC
 
 logger = logger.get('Manager')
 
@@ -31,7 +32,7 @@ class Manager(object):
     def __init__(self):
         kafka_server = '%s:%d' % (config.get('app.kafka.host'), config.get('app.kafka.port'))
         logger.info('Start to connect kafka [%s]' % kafka_server)
-        self._client_command_consumer = KafkaConsumer('agency.command',
+        self._client_command_consumer = KafkaConsumer(AGENCY_COMMAND_TOPIC,
                                                       client_id='agency_manager',
                                                       bootstrap_servers=kafka_server)
         # run initial clients automatically
