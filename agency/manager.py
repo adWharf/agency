@@ -12,11 +12,12 @@
 import threading
 import json
 from kafka import KafkaProducer, KafkaConsumer
-from core import config
-from core import logger
+from agency.core import config
+from agency.core import logger
+from agency.core import sub
 from wxext.client import Client as WxExtClient
 from exceptions import UnknowCommandException
-from constants.topics import AGENCY_COMMAND_TOPIC
+from agency.core.constants.topics import AGENCY_COMMAND_TOPIC
 
 logger = logger.get('Manager')
 
@@ -41,16 +42,24 @@ class Manager(object):
         logger.info('Start statistic...')
         self.start_statistic()
 
+        self.handle_command()
+
         # listen commands topic
-        for record in self._client_command_consumer:
-            try:
-                logger.info(record)
-                v = record.value
-                if isinstance(v, bytes):
-                    v = bytes.decode(v)
-                self._handle_command(json.loads(v), record)
-            except Exception as e:
-                logger.error(e)
+        # for record in self._client_command_consumer:
+        #     try:
+        #         logger.info(record)
+        #         v = record.value
+        #         if isinstance(v, bytes):
+        #             v = bytes.decode(v)
+        #         self._handle_command(json.loads(v), record)
+        #     except Exception as e:
+        #         logger.error(e)
+
+    @sub(AGENCY_COMMAND_TOPIC, 'agency_manager', 'agency_manager')
+    def handle_command(self, message):
+        commands = json.loads(message)
+        self._handle_command(commands, message)
+        pass
 
     def statistic_consumer_factory(self, name):
         kafka_server = '%s:%d' % (config.get('app.kafka.host'), config.get('app.kafka.port'))

@@ -16,8 +16,10 @@ from multiprocessing import Process, Pipe
 from agency.client import APIClient, Account as BaseAccount
 from .bridge import run as build_bridge, TYPE_STATISTIC, TYPE_CAMP_INFO, TYPE_ACTION_RES
 from agency.core import logger
-
-AD_CAMPAIGN_INFO_TOPIC = 'ad.campaign.info'             # 投放计划信息
+from agency.core.constants.topics import AD_CAMPAIGN_INFO_TOPIC
+from agency.core.constants.ad import (
+    ADSTATUS_NORMAL, ADSTATUS_SUSPEND, ADSTATUS_UNKNOW
+)
 
 logger = logger.get('Wxext.Client')
 
@@ -73,11 +75,11 @@ class Client(APIClient):
             rtn[map_key[key]] = original_data[key]
         rtn['click_count'] = original_data['click_url_count'] + original_data['click_pic_count']
         if original_data['real_status'] == '投放中':
-            rtn['status'] = 0
+            rtn['status'] = ADSTATUS_NORMAL
         elif original_data['real_status'] == '暂停投放':
-            rtn['status'] = 4
+            rtn['status'] = ADSTATUS_SUSPEND
         else:
-            rtn['status'] = -1
+            rtn['status'] = ADSTATUS_UNKNOW
         return rtn
 
     def statistic(self):
@@ -92,11 +94,7 @@ class Client(APIClient):
                         Report campaign info
                         '''
                         logger.info('Receive campaigns info')
-                        self._producer.send(AD_CAMPAIGN_INFO_TOPIC, {
-                            'agency': self._agency,
-                            'account': resp['data']['account'],
-                            'campaigns': json.loads(resp['data']['campaigns']),
-                        })
+                        self.report_camp_info(resp['data']['account'], json.loads(resp['data']['campaigns']))
                         logger.info('Send campaign data to kafka successfully')
                     elif resp['type'] == TYPE_ACTION_RES:
                         '''
@@ -109,7 +107,7 @@ class Client(APIClient):
                         '''
                         logger.info('Receive action perform results')
                         data = resp['data']
-                        self.report_perform_res(data['id'], data['resp_cnt'], data['resp_status'])
+                        self.report_cmd_res(data['id'], data['resp_cnt'], data['resp_status'])
                         logger.info('Send action results to kafka successfully')
 
                     elif resp['type'] == TYPE_STATISTIC:
@@ -132,10 +130,9 @@ class Client(APIClient):
                             record['update_time'] = update_at
                             record['account'] = resp['account']
                             processed_data.append(self.transformer(record))
-                        self.producer.send(self._statistic_topic, {
+                        self.report_statistic(resp['account'], {
                             'data': processed_data,
-                            'update_time': update_at,
-                            'account': resp['account']})
+                            'update_time': update_at})
                         logger.info('Send ad data to kafka successfully')
                 except Exception as e:
                     logger.error('Exception raised when send data to kafka')

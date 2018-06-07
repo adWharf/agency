@@ -13,7 +13,9 @@ import kafka
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from agency.core import logger
-
+from agency.core.constants.topics import (
+    AGENCY_COMMAND_REPORTER_TOPIC, AD_CAMPAIGN_INFO_TOPIC
+)
 logger = logger.get('Client')
 
 API_CLIENT = 'api'
@@ -51,13 +53,45 @@ class Client(object):
         '''
         raise NotImplemented
 
-    def report_perform_res(self, id, resp_cnt, resp_status):
-        self._producer.send('agency.command.reporter', {
+    def report_cmd_res(self, id, resp_cnt, resp_status):
+        '''
+        报告命令执行结果
+        :param id:
+        :param resp_cnt:
+        :param resp_status:
+        :return:
+        '''
+        self._producer.send(AGENCY_COMMAND_REPORTER_TOPIC, {
             'id': id,
             'resp_cnt': resp_cnt,
             'resp_status': resp_status,
         })
         logger.info('Reporter results of performing commands successfully')
+
+    def report_statistic(self, account, stat):
+        '''
+        上报实时广告数据
+        :param account:
+        :param stat:
+        :return:
+        '''
+        stat['account'] = account
+        self.producer.send(self._statistic_topic, stat)
+        logger.debug('%s report statistic' % account)
+
+    def report_camp_info(self, account, campaigns):
+        '''
+        上报投放计划信息
+        :param account:
+        :param campaigns:
+        :return:
+        '''
+        self._producer.send(AD_CAMPAIGN_INFO_TOPIC, {
+            'agency': self._agency,
+            'account': account,
+            'campaigns': campaigns,
+        })
+        logger.debug('%s report statistic' % account)
 
 
     def statistic(self):
